@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Kanji Drop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+            height: -webkit-fill-available;
+        }
+
+        body {
+            font-family: 'Zen Maru Gothic', 'Hiragino Kaku Gothic Pro', sans-serif;
+            background: linear-gradient(180deg, #FF6B35 0%, #F7C531 50%, #FFE66D 100%);
+            min-height: 100%;
+            min-height: -webkit-fill-available;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Top play area */
+        .play-area {
+            flex: 1;
+            background: linear-gradient(180deg, #FFF9E6 0%, #FFFDF5 100%);
+            position: relative;
+            overflow: hidden;
+            min-height: 0;
+            border-bottom: 4px solid #FF6B35;
+        }
+
+        /* Danger line */
+        .danger-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: repeating-linear-gradient(
+                90deg,
+                #FF4757,
+                #FF4757 10px,
+                #FFE66D 10px,
+                #FFE66D 20px
+            );
+            z-index: 10;
+            box-shadow: 0 -2px 10px rgba(255, 71, 87, 0.5);
+        }
+
+        /* Kanji blocks */
+        .kanji-block {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            border: 3px solid rgba(0,0,0,0.2);
+            border-radius: 12px;
+            transition: transform 0.1s, box-shadow 0.2s;
+            cursor: default;
+            user-select: none;
+        }
+
+        .kanji-block.matched {
+            animation: explode 0.3s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.5; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        /* Color themes for blocks */
+        .block-gray {
+            background: linear-gradient(135deg, #E8E8E8 0%, #D0D0D0 100%);
+            color: #555;
+            border-color: #BBB;
+        }
+        .block-active {
+            background: linear-gradient(135deg, #7ED56F 0%, #28B485 100%);
+            color: #fff;
+            border-color: #28B485;
+            box-shadow: 0 0 20px rgba(40, 180, 133, 0.6), 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Helper hint that appears when block is close to bottom */
+        .helper-hint {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -28px;
+            background: #FF4757;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            animation: blink 0.5s ease-in-out infinite;
+            z-index: 5;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.5);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* English meaning background text on correct answer */
+        .meaning-background {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            font-weight: 700;
+            color: rgba(0, 0, 0, 0.06);
+            white-space: nowrap;
+            z-index: 1;
+            pointer-events: none;
+            text-transform: capitalize;
+            animation: meaningFade 1.5s ease-out forwards;
+        }
+
+        @keyframes meaningFade {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Bottom answer area */
+        .answer-area {
+            background: linear-gradient(180deg, #2D3436 0%, #1E272E 100%);
+            padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+            flex-shrink: 0;
+            border-top: 4px solid #F7C531;
+        }
+
+        .answer-label {
+            color: #FFE66D;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .answer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .answer-btn {
+            background: linear-gradient(135deg, #636E72 0%, #4A5568 100%);
+            border: 2px solid #718093;
+            border-radius: 10px;
+            padding: 10px 5px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .answer-btn:hover {
+            background: linear-gradient(135deg, #747D82 0%, #5A6978 100%);
+            transform: scale(1.05);
+            border-color: #FFE66D;
+        }
+
+        .answer-btn:active {
+            transform: scale(0.95);
+        }
+
+        .answer-btn.correct {
+            background: linear-gradient(135deg, #7ED56F 0%, #28B485 100%);
+            border-color: #28B485;
+            animation: pulse 0.3s;
+        }
+
+        .answer-btn.wrong {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A5A 100%);
+            border-color: #FF4757;
+            animation: shake 0.3s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes levelUpPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            40% { transform: translate(-50%, -50%) scale(1); }
+            80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+
+        /* UI Elements */
+        .game-header {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 20;
+        }
+
+        .score, .level {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7C531 100%);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Game over / Start screen */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(255,107,53,0.95) 0%, rgba(247,197,49,0.95) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: #fff;
+        }
+
+        .overlay h1 {
+            font-family: 'Dela Gothic One', 'Zen Maru Gothic', sans-serif;
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 0 #D35400, -1px -1px 0 #D35400, 1px -1px 0 #D35400, -1px 1px 0 #D35400;
+            letter-spacing: 2px;
+        }
+
+        .overlay p {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .overlay .final-score {
+            font-family: 'Dela Gothic One', sans-serif;
+            font-size: 56px;
+            color: #fff;
+            margin: 20px 0;
+            text-shadow: 3px 3px 0 #D35400;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #2D3436 0%, #1E272E 100%);
+            border: 3px solid #FFE66D;
+            color: #FFE66D;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #3D4446 0%, #2E373E 100%);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive font sizes for buttons */
+        @media (max-width: 360px) {
+            .answer-btn {
+                font-size: 13px;
+                padding: 8px 4px;
+            }
+            .answer-label {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+        }
+
+        /* Very small screens (iPhone SE, older Androids) */
+        @media (max-height: 600px) {
+            .answer-btn {
+                padding: 8px 4px;
+                font-size: 14px;
+            }
+            .answer-label {
+                margin-bottom: 6px;
+                font-size: 11px;
+            }
+            .answer-grid {
+                gap: 5px;
+            }
+            .answer-area {
+                padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+            }
+        }
+
+        /* Landscape orientation - stack differently */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .answer-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            .answer-btn {
+                padding: 8px 3px;
+                font-size: 13px;
+            }
+            .answer-area {
+                padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="play-area" id="playArea">
+            <div class="game-header">
+                <div class="score">Score: <span id="scoreDisplay">0</span></div>
+                <div class="level">Lv.<span id="levelDisplay">1</span> (<span id="progressDisplay">0</span>/20)</div>
+            </div>
+            <div class="danger-line"></div>
+        </div>
+
+        <div class="answer-area">
+            <div class="answer-label">Select the hiragana reading:</div>
+            <div class="answer-grid" id="answerGrid">
+                <!-- Answer buttons generated by JS -->
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div class="overlay" id="startScreen">
+            <h1>漢字ドロップ</h1>
+            <p>Kanji Drop</p>
+            <p style="font-size: 14px; max-width: 280px; text-align: center; opacity: 0.8;">
+                Match the falling kanji blocks with their hiragana readings before they reach the bottom!
+            </p>
+            <button class="start-btn" id="startBtn">Start Game</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div class="overlay hidden" id="gameOverScreen">
+            <h1>Game Over</h1>
+            <p>Final Score:</p>
+            <div class="final-score" id="finalScore">0</div>
+            <button class="start-btn" id="restartBtn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Kanji vocabulary organized by difficulty level
+        const vocabularyByLevel = {
+            // Level 1: Very basic single kanji
+            1: [
+                { kanji: '一', hiragana: 'いち', meaning: 'one' },
+                { kanji: '二', hiragana: 'に', meaning: 'two' },
+                { kanji: '三', hiragana: 'さん', meaning: 'three' },
+                { kanji: '大', hiragana: 'おお', meaning: 'big' },
+                { kanji: '小', hiragana: 'ちい', meaning: 'small' },
+                { kanji: '日', hiragana: 'ひ', meaning: 'sun' },
+                { kanji: '月', hiragana: 'つき', meaning: 'moon' },
+                { kanji: '木', hiragana: 'き', meaning: 'tree' },
+                { kanji: '水', hiragana: 'みず', meaning: 'water' },
+                { kanji: '火', hiragana: 'ひ', meaning: 'fire' },
+                { kanji: '土', hiragana: 'つち', meaning: 'earth' },
+                { kanji: '山', hiragana: 'やま', meaning: 'mountain' },
+                { kanji: '川', hiragana: 'かわ', meaning: 'river' },
+                { kanji: '人', hiragana: 'ひと', meaning: 'person' },
+                { kanji: '口', hiragana: 'くち', meaning: 'mouth' },
+            ],
+            // Level 2: Basic nature & animals
+            2: [
+                { kanji: '空', hiragana: 'そら', meaning: 'sky' },
+                { kanji: '花', hiragana: 'はな', meaning: 'flower' },
+                { kanji: '雨', hiragana: 'あめ', meaning: 'rain' },
+                { kanji: '風', hiragana: 'かぜ', meaning: 'wind' },
+                { kanji: '雪', hiragana: 'ゆき', meaning: 'snow' },
+                { kanji: '星', hiragana: 'ほし', meaning: 'star' },
+                { kanji: '海', hiragana: 'うみ', meaning: 'sea' },
+                { kanji: '森', hiragana: 'もり', meaning: 'forest' },
+                { kanji: '石', hiragana: 'いし', meaning: 'stone' },
+                { kanji: '犬', hiragana: 'いぬ', meaning: 'dog' },
+                { kanji: '猫', hiragana: 'ねこ', meaning: 'cat' },
+                { kanji: '鳥', hiragana: 'とり', meaning: 'bird' },
+                { kanji: '魚', hiragana: 'さかな', meaning: 'fish' },
+                { kanji: '虫', hiragana: 'むし', meaning: 'insect' },
+                { kanji: '草', hiragana: 'くさ', meaning: 'grass' },
+            ],
+            // Level 3: Basic verbs & adjectives
+            3: [
+                { kanji: '食', hiragana: 'た', meaning: 'eat' },
+                { kanji: '飲', hiragana: 'の', meaning: 'drink' },
+                { kanji: '見', hiragana: 'み', meaning: 'see' },
+                { kanji: '聞', hiragana: 'き', meaning: 'hear' },
+                { kanji: '行', hiragana: 'い', meaning: 'go' },
+                { kanji: '来', hiragana: 'く', meaning: 'come' },
+                { kanji: '出', hiragana: 'で', meaning: 'exit' },
+                { kanji: '入', hiragana: 'はい', meaning: 'enter' },
+                { kanji: '上', hiragana: 'うえ', meaning: 'up' },
+                { kanji: '下', hiragana: 'した', meaning: 'down' },
+                { kanji: '右', hiragana: 'みぎ', meaning: 'right' },
+                { kanji: '左', hiragana: 'ひだり', meaning: 'left' },
+                { kanji: '前', hiragana: 'まえ', meaning: 'front' },
+                { kanji: '後', hiragana: 'うし', meaning: 'behind' },
+                { kanji: '中', hiragana: 'なか', meaning: 'inside' },
+            ],
+            // Level 4: Compound words - family & school
+            4: [
+                { kanji: '家族', hiragana: 'かぞく', meaning: 'family' },
+                { kanji: '友達', hiragana: 'ともだち', meaning: 'friend' },
+                { kanji: '学校', hiragana: 'がっこう', meaning: 'school' },
+                { kanji: '先生', hiragana: 'せんせい', meaning: 'teacher' },
+                { kanji: '学生', hiragana: 'がくせい', meaning: 'student' },
+                { kanji: '父親', hiragana: 'ちちおや', meaning: 'father' },
+                { kanji: '母親', hiragana: 'ははおや', meaning: 'mother' },
+                { kanji: '兄弟', hiragana: 'きょうだい', meaning: 'siblings' },
+                { kanji: '姉妹', hiragana: 'しまい', meaning: 'sisters' },
+                { kanji: '子供', hiragana: 'こども', meaning: 'child' },
+                { kanji: '名前', hiragana: 'なまえ', meaning: 'name' },
+                { kanji: '教室', hiragana: 'きょうしつ', meaning: 'classroom' },
+                { kanji: '宿題', hiragana: 'しゅくだい', meaning: 'homework' },
+                { kanji: '授業', hiragana: 'じゅぎょう', meaning: 'class' },
+                { kanji: '試験', hiragana: 'しけん', meaning: 'exam' },
+            ],
+            // Level 5: Compound words - daily life
+            5: [
+                { kanji: '勉強', hiragana: 'べんきょう', meaning: 'study' },
+                { kanji: '仕事', hiragana: 'しごと', meaning: 'work' },
+                { kanji: '会社', hiragana: 'かいしゃ', meaning: 'company' },
+                { kanji: '電話', hiragana: 'でんわ', meaning: 'phone' },
+                { kanji: '電車', hiragana: 'でんしゃ', meaning: 'train' },
+                { kanji: '自転車', hiragana: 'じてんしゃ', meaning: 'bicycle' },
+                { kanji: '飛行機', hiragana: 'ひこうき', meaning: 'airplane' },
+                { kanji: '病院', hiragana: 'びょういん', meaning: 'hospital' },
+                { kanji: '図書館', hiragana: 'としょかん', meaning: 'library' },
+                { kanji: '映画', hiragana: 'えいが', meaning: 'movie' },
+                { kanji: '音楽', hiragana: 'おんがく', meaning: 'music' },
+                { kanji: '料理', hiragana: 'りょうり', meaning: 'cooking' },
+                { kanji: '買物', hiragana: 'かいもの', meaning: 'shopping' },
+                { kanji: '旅行', hiragana: 'りょこう', meaning: 'travel' },
+                { kanji: '天気', hiragana: 'てんき', meaning: 'weather' },
+            ],
+            // Level 6+: Advanced compound words
+            6: [
+                { kanji: '経験', hiragana: 'けいけん', meaning: 'experience' },
+                { kanji: '練習', hiragana: 'れんしゅう', meaning: 'practice' },
+                { kanji: '準備', hiragana: 'じゅんび', meaning: 'preparation' },
+                { kanji: '約束', hiragana: 'やくそく', meaning: 'promise' },
+                { kanji: '説明', hiragana: 'せつめい', meaning: 'explanation' },
+                { kanji: '質問', hiragana: 'しつもん', meaning: 'question' },
+                { kanji: '問題', hiragana: 'もんだい', meaning: 'problem' },
+                { kanji: '意味', hiragana: 'いみ', meaning: 'meaning' },
+                { kanji: '理由', hiragana: 'りゆう', meaning: 'reason' },
+                { kanji: '結果', hiragana: 'けっか', meaning: 'result' },
+                { kanji: '関係', hiragana: 'かんけい', meaning: 'relationship' },
+                { kanji: '環境', hiragana: 'かんきょう', meaning: 'environment' },
+                { kanji: '社会', hiragana: 'しゃかい', meaning: 'society' },
+                { kanji: '政治', hiragana: 'せいじ', meaning: 'politics' },
+                { kanji: '経済', hiragana: 'けいざい', meaning: 'economy' },
+            ],
+        };
+
+        // Get vocabulary for current level (includes previous levels too)
+        function getVocabularyForLevel(level) {
+            let vocab = [];
+            const maxLevel = Math.min(level, 6);
+            for (let i = 1; i <= maxLevel; i++) {
+                vocab = vocab.concat(vocabularyByLevel[i]);
+            }
+            return vocab;
+        }
+
+        // Game state
+        let gameState = {
+            score: 0,
+            level: 1,
+            correctCount: 0,
+            blocks: [],
+            activeBlock: null,
+            isRunning: false,
+            spawnInterval: null,
+            gameLoop: null,
+            fallSpeed: 0.3,
+            spawnRate: 4000
+        };
+
+        const WORDS_PER_LEVEL = 20;
+
+        // DOM elements
+        const playArea = document.getElementById('playArea');
+        const answerGrid = document.getElementById('answerGrid');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const progressDisplay = document.getElementById('progressDisplay');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScore = document.getElementById('finalScore');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // Get play area dimensions
+        function getPlayAreaBounds() {
+            const rect = playArea.getBoundingClientRect();
+            return {
+                width: rect.width,
+                height: rect.height
+            };
+        }
+
+        // Create a kanji block
+        function createBlock() {
+            const bounds = getPlayAreaBounds();
+            const currentVocab = getVocabularyForLevel(gameState.level);
+            const vocab = currentVocab[Math.floor(Math.random() * currentVocab.length)];
+
+            const blockWidth = vocab.kanji.length > 1 ? 80 : 60;
+            const x = Math.random() * (bounds.width - blockWidth - 20) + 10;
+
+            const block = {
+                id: Date.now() + Math.random(),
+                vocab: vocab,
+                x: x,
+                y: -70,
+                width: blockWidth,
+                element: null
+            };
+
+            // Create DOM element
+            const el = document.createElement('div');
+            el.className = 'kanji-block block-gray';
+            el.style.width = `${blockWidth}px`;
+            el.style.left = `${x}px`;
+            el.style.top = `${block.y}px`;
+            el.textContent = vocab.kanji;
+            el.dataset.blockId = block.id;
+
+            playArea.appendChild(el);
+            block.element = el;
+
+            gameState.blocks.push(block);
+
+            // If no active block, make this one active
+            if (!gameState.activeBlock) {
+                setActiveBlock(block);
+            }
+
+            updateAnswerButtons();
+        }
+
+        // Set a block as the active (green) one
+        function setActiveBlock(block) {
+            // Remove active class from previous
+            if (gameState.activeBlock && gameState.activeBlock.element) {
+                gameState.activeBlock.element.classList.remove('block-active');
+                gameState.activeBlock.element.classList.add('block-gray');
+            }
+
+            gameState.activeBlock = block;
+
+            if (block && block.element) {
+                block.element.classList.remove('block-gray');
+                block.element.classList.add('block-active');
+            }
+
+            updateAnswerButtons();
+        }
+
+        // Select next active block (lowest one that's not the current)
+        function selectNextActiveBlock() {
+            if (gameState.blocks.length === 0) {
+                gameState.activeBlock = null;
+                updateAnswerButtons();
+                return;
+            }
+
+            // Get the block closest to the bottom (highest y value)
+            const sortedBlocks = [...gameState.blocks].sort((a, b) => b.y - a.y);
+            setActiveBlock(sortedBlocks[0]);
+        }
+
+        // Track current answer set to avoid unnecessary rebuilds
+        let currentAnswerBlockId = null;
+
+        // Update answer buttons based on active block
+        function updateAnswerButtons(forceUpdate = false) {
+            // Don't rebuild if same block is active (prevents button shuffling)
+            if (!forceUpdate && gameState.activeBlock && currentAnswerBlockId === gameState.activeBlock.id) {
+                return;
+            }
+
+            // If no active block, keep buttons visible but just wait for next block
+            if (!gameState.activeBlock) {
+                currentAnswerBlockId = null;
+                // Don't change anything - keep current buttons visible
+                return;
+            }
+
+            currentAnswerBlockId = gameState.activeBlock.id;
+
+            // The correct answer
+            const correctReading = gameState.activeBlock.vocab.hiragana;
+
+            // Add some decoy readings from current level vocabulary
+            const currentVocab = getVocabularyForLevel(gameState.level);
+            const decoys = currentVocab
+                .filter(v => v.hiragana !== correctReading)
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 5)
+                .map(v => v.hiragana);
+
+            const allReadings = [correctReading, ...decoys]
+                .sort(() => Math.random() - 0.5);
+
+            answerGrid.innerHTML = '';
+            allReadings.forEach(hiragana => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.textContent = hiragana;
+                btn.addEventListener('click', () => handleAnswer(hiragana, btn));
+                answerGrid.appendChild(btn);
+            });
+        }
+
+        // Handle answer selection
+        function handleAnswer(hiragana, btn) {
+            if (!gameState.activeBlock) return;
+
+            const isCorrect = gameState.activeBlock.vocab.hiragana === hiragana;
+
+            if (isCorrect) {
+                const block = gameState.activeBlock;
+
+                // Correct answer
+                btn.classList.add('correct');
+                block.element.classList.add('matched');
+
+                // Show English meaning as soft background text
+                const meaningBg = document.createElement('div');
+                meaningBg.className = 'meaning-background';
+                meaningBg.textContent = block.vocab.meaning;
+                playArea.appendChild(meaningBg);
+                setTimeout(() => meaningBg.remove(), 1500);
+
+                // Update score and progress
+                gameState.score += 10 * gameState.level;
+                gameState.correctCount++;
+                scoreDisplay.textContent = gameState.score;
+                progressDisplay.textContent = gameState.correctCount % WORDS_PER_LEVEL;
+
+                // Remove block after animation
+                setTimeout(() => {
+                    if (block.element.parentNode) {
+                        block.element.remove();
+                    }
+                    gameState.blocks = gameState.blocks.filter(b => b.id !== block.id);
+                    selectNextActiveBlock();
+                }, 300);
+
+                // Check for level up (every 20 correct answers)
+                if (gameState.correctCount % WORDS_PER_LEVEL === 0) {
+                    levelUp();
+                }
+            } else {
+                // Wrong answer
+                btn.classList.add('wrong');
+                gameState.score = Math.max(0, gameState.score - 5);
+                scoreDisplay.textContent = gameState.score;
+            }
+
+            setTimeout(() => {
+                btn.classList.remove('correct', 'wrong');
+            }, 300);
+        }
+
+        // Level up
+        function levelUp() {
+            gameState.level++;
+            levelDisplay.textContent = gameState.level;
+            progressDisplay.textContent = '0';
+
+            // Increase difficulty by 10% each level
+            gameState.fallSpeed *= 1.1;
+            gameState.spawnRate = Math.max(1500, gameState.spawnRate * 0.9);
+
+            // Reset spawn interval with new rate
+            clearInterval(gameState.spawnInterval);
+            gameState.spawnInterval = setInterval(createBlock, gameState.spawnRate);
+
+            // Show level up notification
+            showLevelUpNotification();
+        }
+
+        // Level up notification
+        function showLevelUpNotification() {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #7ED56F 0%, #28B485 100%);
+                color: white;
+                padding: 20px 40px;
+                border-radius: 15px;
+                font-size: 24px;
+                font-weight: 700;
+                z-index: 50;
+                animation: levelUpPop 1.5s ease-out forwards;
+                border: 3px solid white;
+                box-shadow: 0 0 30px rgba(40, 180, 133, 0.8);
+            `;
+            notification.textContent = `Level ${gameState.level}!`;
+            playArea.appendChild(notification);
+
+            setTimeout(() => notification.remove(), 1500);
+        }
+
+        // Gradual difficulty increase over time
+        let difficultyTimer = null;
+        function startDifficultyTimer() {
+            difficultyTimer = setInterval(() => {
+                if (gameState.isRunning) {
+                    // Slowly increase fall speed over time
+                    gameState.fallSpeed += 0.02;
+                    // Slowly decrease spawn rate (more blocks)
+                    gameState.spawnRate = Math.max(1200, gameState.spawnRate - 50);
+
+                    // Update spawn interval
+                    clearInterval(gameState.spawnInterval);
+                    gameState.spawnInterval = setInterval(createBlock, gameState.spawnRate);
+                }
+            }, 10000); // Every 10 seconds
+        }
+
+        // Game loop
+        function update() {
+            if (!gameState.isRunning) return;
+
+            const bounds = getPlayAreaBounds();
+            const dangerZone = bounds.height * 0.7; // 70% down = danger zone
+
+            gameState.blocks.forEach(block => {
+                block.y += gameState.fallSpeed;
+                block.element.style.top = `${block.y}px`;
+
+                // Show helper hint when active block is in danger zone
+                if (block === gameState.activeBlock && block.y + 60 >= dangerZone) {
+                    if (!block.element.querySelector('.helper-hint')) {
+                        const hint = document.createElement('div');
+                        hint.className = 'helper-hint';
+                        hint.textContent = block.vocab.hiragana;
+                        block.element.appendChild(hint);
+                    }
+                }
+
+                // Check if block reached bottom
+                if (block.y + 60 >= bounds.height) {
+                    gameOver();
+                }
+            });
+
+            gameState.gameLoop = requestAnimationFrame(update);
+        }
+
+        // Start game
+        function startGame() {
+            // Reset state
+            gameState = {
+                score: 0,
+                level: 1,
+                correctCount: 0,
+                blocks: [],
+                activeBlock: null,
+                isRunning: true,
+                spawnInterval: null,
+                gameLoop: null,
+                fallSpeed: 0.3,
+                spawnRate: 4000
+            };
+
+            // Clear any existing blocks
+            document.querySelectorAll('.kanji-block').forEach(el => el.remove());
+
+            // Update UI
+            scoreDisplay.textContent = '0';
+            levelDisplay.textContent = '1';
+            progressDisplay.textContent = '0';
+
+            // Hide overlays
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+
+            // Reset answer tracking
+            currentAnswerBlockId = null;
+
+            // Start spawning and game loop
+            createBlock();
+            gameState.spawnInterval = setInterval(createBlock, gameState.spawnRate);
+            gameState.gameLoop = requestAnimationFrame(update);
+
+            // Start gradual difficulty increase
+            startDifficultyTimer();
+        }
+
+        // Game over
+        function gameOver() {
+            gameState.isRunning = false;
+            clearInterval(gameState.spawnInterval);
+            clearInterval(difficultyTimer);
+            cancelAnimationFrame(gameState.gameLoop);
+
+            finalScore.textContent = gameState.score;
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+
+        // Initialize answer grid
+        updateAnswerButtons();
+    </script>
+</body>
+</html>
