@@ -99,6 +99,15 @@
             animation: explode 0.3s ease-out forwards;
         }
 
+        .kanji-block.spawning {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
         @keyframes explode {
             0% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.3); opacity: 0.5; }
@@ -546,7 +555,7 @@
             isRunning: false,
             spawnInterval: null,
             gameLoop: null,
-            fallSpeed: 0.3,
+            fallSpeed: 0.36,
             spawnRate: 4000
         };
 
@@ -586,22 +595,29 @@
                 id: Date.now() + Math.random(),
                 vocab: vocab,
                 x: x,
-                y: -70,
+                y: 50,
                 width: blockWidth,
                 element: null
             };
 
             // Create DOM element
             const el = document.createElement('div');
-            el.className = 'kanji-block block-gray';
+            el.className = 'kanji-block block-gray spawning';
             el.style.width = `${blockWidth}px`;
             el.style.left = `${x}px`;
             el.style.top = `${block.y}px`;
+            el.style.opacity = '0';
             el.textContent = vocab.kanji;
             el.dataset.blockId = block.id;
 
             playArea.appendChild(el);
             block.element = el;
+
+            // Remove spawning class after animation
+            setTimeout(() => {
+                el.classList.remove('spawning');
+                el.style.opacity = '1';
+            }, 500);
 
             gameState.blocks.push(block);
 
@@ -840,7 +856,7 @@
                 isRunning: true,
                 spawnInterval: null,
                 gameLoop: null,
-                fallSpeed: 0.3,
+                fallSpeed: 0.36,
                 spawnRate: 4000
             };
 
