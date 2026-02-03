@@ -996,7 +996,7 @@
                 id: Date.now() + Math.random(),
                 vocab: vocab,
                 x: x,
-                y: 50,
+                y: 60,
                 width: blockWidth,
                 element: null
             };
@@ -1226,7 +1226,7 @@
                     clearInterval(gameState.spawnInterval);
                     gameState.spawnInterval = setInterval(createBlock, gameState.spawnRate);
                 }
-            }, 10000);
+            }, 5000);
         }
 
         // Game loop
@@ -1269,8 +1269,8 @@
                 isRunning: true,
                 spawnInterval: null,
                 gameLoop: null,
-                fallSpeed: 0.36,
-                spawnRate: 2500
+                fallSpeed: 0.6,
+                spawnRate: 1700
             };
 
             document.querySelectorAll('.kanji-block').forEach(el => el.remove());
