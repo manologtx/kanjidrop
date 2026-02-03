@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Kanji Drop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+            height: -webkit-fill-available;
+        }
+
+        body {
+            font-family: 'Zen Maru Gothic', 'Hiragino Kaku Gothic Pro', sans-serif;
+            background: linear-gradient(180deg, #FF6B35 0%, #F7C531 50%, #FFE66D 100%);
+            min-height: 100%;
+            min-height: -webkit-fill-available;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Top play area */
+        .play-area {
+            flex: 1;
+            background: linear-gradient(180deg, #FFF9E6 0%, #FFFDF5 100%);
+            position: relative;
+            overflow: hidden;
+            min-height: 0;
+            border-bottom: 4px solid #FF6B35;
+        }
+
+        /* Danger line */
+        .danger-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: repeating-linear-gradient(
+                90deg,
+                #FF4757,
+                #FF4757 10px,
+                #FFE66D 10px,
+                #FFE66D 20px
+            );
+            z-index: 10;
+            box-shadow: 0 -2px 10px rgba(255, 71, 87, 0.5);
+        }
+
+        /* Kanji blocks */
+        .kanji-block {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            border: 3px solid rgba(0,0,0,0.2);
+            border-radius: 12px;
+            transition: transform 0.1s, box-shadow 0.2s;
+            cursor: default;
+            user-select: none;
+        }
+
+        .kanji-block.matched {
+            animation: explode 0.3s ease-out forwards;
+        }
+
+        .kanji-block.spawning {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.5; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        /* Color themes for blocks */
+        .block-gray {
+            background: linear-gradient(135deg, #E8E8E8 0%, #D0D0D0 100%);
+            color: #555;
+            border-color: #BBB;
+        }
+        .block-active {
+            background: linear-gradient(135deg, #7ED56F 0%, #28B485 100%);
+            color: #fff;
+            border-color: #28B485;
+            box-shadow: 0 0 20px rgba(40, 180, 133, 0.6), 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Helper hint that appears when block is close to bottom */
+        .helper-hint {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -28px;
+            background: #FF4757;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            animation: blink 0.5s ease-in-out infinite;
+            z-index: 5;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.5);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* English meaning background text on correct answer */
+        .meaning-background {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            font-weight: 700;
+            color: rgba(0, 0, 0, 0.08);
+            white-space: nowrap;
+            z-index: 1;
+            pointer-events: none;
+            text-transform: capitalize;
+            animation: meaningFade 1.5s ease-out forwards;
+        }
+
+        @keyframes meaningFade {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Bottom answer area */
+        .answer-area {
+            background: linear-gradient(180deg, #2D3436 0%, #1E272E 100%);
+            padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+            flex-shrink: 0;
+            border-top: 4px solid #F7C531;
+        }
+
+        .answer-label {
+            color: #FFE66D;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .answer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .answer-btn {
+            background: linear-gradient(135deg, #636E72 0%, #4A5568 100%);
+            border: 2px solid #718093;
+            border-radius: 10px;
+            padding: 10px 5px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .answer-btn:hover {
+            background: linear-gradient(135deg, #747D82 0%, #5A6978 100%);
+            transform: scale(1.05);
+            border-color: #FFE66D;
+        }
+
+        .answer-btn:active {
+            transform: scale(0.95);
+        }
+
+        .answer-btn.correct {
+            background: linear-gradient(135deg, #7ED56F 0%, #28B485 100%);
+            border-color: #28B485;
+            animation: pulse 0.3s;
+        }
+
+        .answer-btn.wrong {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A5A 100%);
+            border-color: #FF4757;
+            animation: shake 0.3s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes levelUpPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            40% { transform: translate(-50%, -50%) scale(1); }
+            80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+
+        /* UI Elements */
+        .game-header {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 20;
+        }
+
+        .score, .level {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7C531 100%);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .score {
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .score:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .score:active {
+            transform: scale(0.95);
+        }
+
+        /* Overlays */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(255,107,53,0.98) 0%, rgba(247,197,49,0.98) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .overlay h1 {
+            font-family: 'Dela Gothic One', 'Zen Maru Gothic', sans-serif;
+            font-size: 38px;
+            margin-bottom: 5px;
+            text-shadow: 3px 3px 0 #D35400, -1px -1px 0 #D35400, 1px -1px 0 #D35400, -1px 1px 0 #D35400;
+            letter-spacing: 2px;
+        }
+
+        .overlay h2 {
+            font-family: 'Dela Gothic One', 'Zen Maru Gothic', sans-serif;
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #D35400;
+        }
+
+        .overlay p {
+            font-size: 16px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .overlay .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .overlay .final-score {
+            font-family: 'Dela Gothic One', sans-serif;
+            font-size: 56px;
+            color: #fff;
+            margin: 20px 0;
+            text-shadow: 3px 3px 0 #D35400;
+        }
+
+        .menu-btn {
+            background: linear-gradient(135deg, #2D3436 0%, #1E272E 100%);
+            border: 3px solid #FFE66D;
+            color: #FFE66D;
+            padding: 15px 50px;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 8px 0;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            min-width: 200px;
+        }
+
+        .menu-btn:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #3D4446 0%, #2E373E 100%);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .menu-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .menu-btn.secondary {
+            background: transparent;
+            border-color: rgba(255,255,255,0.5);
+            color: #fff;
+            padding: 12px 40px;
+            font-size: 16px;
+        }
+
+        .menu-btn.secondary:hover {
+            border-color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.5);
+            color: #fff;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(0,0,0,0.3);
+            border-color: #fff;
+        }
+
+        /* Level Select */
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 320px;
+            margin-top: 15px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .level-card {
+            background: linear-gradient(135deg, #2D3436 0%, #1E272E 100%);
+            border: 3px solid #FFE66D;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .level-card:hover:not(.locked) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .level-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .level-card .level-num {
+            font-family: 'Dela Gothic One', sans-serif;
+            font-size: 28px;
+            color: #FFE66D;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+        }
+
+        .level-card .level-name {
+            font-size: 12px;
+            color: #fff;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        .level-card .level-status {
+            font-size: 10px;
+            color: #7ED56F;
+            margin-top: 5px;
+        }
+
+        .level-card.locked .level-status {
+            color: #FF6B6B;
+        }
+
+        /* Category cards */
+        .category-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            width: 100%;
+            max-width: 320px;
+            margin-top: 15px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .category-card {
+            background: linear-gradient(135deg, #2D3436 0%, #1E272E 100%);
+            border: 3px solid #FFE66D;
+            border-radius: 15px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .category-card .cat-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .category-card .cat-info {
+            flex: 1;
+            text-align: left;
+        }
+
+        .category-card .cat-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #FFE66D;
+        }
+
+        .category-card .cat-progress {
+            font-size: 11px;
+            color: #7ED56F;
+            margin-top: 3px;
+        }
+
+        /* Options */
+        .options-content {
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .option-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+        }
+
+        .option-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .toggle-container {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 3px;
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            padding: 8px 15px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            border-radius: 17px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #7ED56F 0%, #28B485 100%);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(40, 180, 133, 0.4);
+        }
+
+        .toggle-btn:hover:not(.active) {
+            color: #fff;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 360px) {
+            .answer-btn {
+                font-size: 13px;
+                padding: 8px 4px;
+            }
+            .answer-label {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+            .overlay h1 {
+                font-size: 32px;
+            }
+            .level-grid {
+                gap: 8px;
+            }
+            .level-card {
+                padding: 12px;
+            }
+            .level-card .level-num {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .answer-btn {
+                padding: 8px 4px;
+                font-size: 14px;
+            }
+            .answer-label {
+                margin-bottom: 6px;
+                font-size: 11px;
+            }
+            .answer-grid {
+                gap: 5px;
+            }
+            .answer-area {
+                padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            .answer-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            .answer-btn {
+                padding: 8px 3px;
+                font-size: 13px;
+            }
+            .answer-area {
+                padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="play-area" id="playArea">
+            <div class="game-header">
+                <div class="score" id="pauseBtn">Score: <span id="scoreDisplay">0</span></div>
+                <div class="level"><span id="levelDisplay">Lv.1</span> (<span id="progressDisplay">0</span>/30)</div>
+            </div>
+            <div class="danger-line"></div>
+        </div>
+
+        <div class="answer-area">
+            <div class="answer-label">Select the hiragana reading:</div>
+            <div class="answer-grid" id="answerGrid">
+                <!-- Answer buttons generated by JS -->
+            </div>
+        </div>
+
+        <!-- Main Menu Screen -->
+        <div class="overlay" id="mainMenuScreen">
+            <h1>漢字ドロップ</h1>
+            <p class="subtitle">Kanji Drop</p>
+            <p id="menuDescription" style="font-size: 13px; max-width: 280px; text-align: center; opacity: 0.7; margin-bottom: 20px;">
+                Match the falling kanji with their readings!
+            </p>
+            <button class="menu-btn" id="playBtn">Play</button>
+            <button class="menu-btn secondary" id="levelSelectBtn">Level Select</button>
+            <button class="menu-btn secondary" id="optionsBtn">Options</button>
+        </div>
+
+        <!-- Category Select Screen -->
+        <div class="overlay hidden" id="categorySelectScreen">
+            <button class="back-btn" id="categoryBackBtn">← Back</button>
+            <h2>Categories</h2>
+            <div class="category-grid" id="categoryGrid">
+                <!-- Category cards generated by JS -->
+            </div>
+        </div>
+
+        <!-- Level Select Screen (sublevels within a category) -->
+        <div class="overlay hidden" id="levelSelectScreen">
+            <button class="back-btn" id="levelBackBtn">← Back</button>
+            <h2 id="levelSelectTitle">Select Level</h2>
+            <div class="level-grid" id="levelGrid">
+                <!-- Level cards generated by JS -->
+            </div>
+        </div>
+
+        <!-- Options Screen -->
+        <div class="overlay hidden" id="optionsScreen">
+            <button class="back-btn" id="optionsBackBtn">← Back</button>
+            <h2>Options</h2>
+            <div class="options-content">
+                <div class="option-row">
+                    <span class="option-label">Reading Style</span>
+                    <div class="toggle-container">
+                        <button class="toggle-btn active" id="hiraganaBtn">Hiragana</button>
+                        <button class="toggle-btn" id="romajiBtn">Romaji</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div class="overlay hidden" id="gameOverScreen">
+            <h1>Game Over</h1>
+            <p>Final Score:</p>
+            <div class="final-score" id="finalScore">0</div>
+            <p id="levelUnlockMsg" class="hidden" style="color: #7ED56F; font-size: 18px; margin-bottom: 10px;"></p>
+            <button class="menu-btn" id="restartBtn">Play Again</button>
+            <button class="menu-btn secondary" id="menuBtn">Main Menu</button>
+        </div>
+
+        <!-- Level Complete Screen -->
+        <div class="overlay hidden" id="levelCompleteScreen">
+            <h1>Level Complete!</h1>
+            <p>You unlocked:</p>
+            <div class="final-score" id="unlockedLevelName"></div>
+            <button class="menu-btn" id="continueBtn">Continue</button>
+            <button class="menu-btn secondary" id="levelCompleteMenuBtn">Main Menu</button>
+        </div>
+
+        <!-- Pause Menu Screen -->
+        <div class="overlay hidden" id="pauseScreen">
+            <h2>Paused</h2>
+            <p style="opacity: 0.7; margin-bottom: 20px;">Score: <span id="pauseScoreDisplay">0</span></p>
+            <button class="menu-btn" id="resumeBtn">Resume</button>
+            <button class="menu-btn secondary" id="pauseRestartBtn">Restart Level</button>
+            <button class="menu-btn secondary" id="pauseMenuBtn">Main Menu</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
