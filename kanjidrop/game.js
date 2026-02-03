@@ -529,13 +529,14 @@ function update() {
     if (!gameState.isRunning) return;
 
     const bounds = getPlayAreaBounds();
-    const dangerZone = bounds.height * 0.4;
+    const hintZone = bounds.height * 0.2;
+    const dangerZone = bounds.height * 0.7;
 
     gameState.blocks.forEach(block => {
         block.y += gameState.fallSpeed;
         block.element.style.top = `${block.y}px`;
 
-        if (block === gameState.activeBlock && block.y + 60 >= dangerZone) {
+        if (block === gameState.activeBlock && block.y + 60 >= hintZone) {
             if (!block.element.querySelector('.helper-hint')) {
                 const hint = document.createElement('div');
                 hint.className = 'helper-hint';
