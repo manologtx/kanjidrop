@@ -73,7 +73,7 @@ let gameState = {
     isRunning: false,
     spawnInterval: null,
     gameLoop: null,
-    fallSpeed: 0.35,
+    fallSpeed: 0.10,
     spawnRate: 3500
 };
 
@@ -498,7 +498,7 @@ let difficultyTimer = null;
 function startDifficultyTimer() {
     difficultyTimer = setInterval(() => {
         if (gameState.isRunning) {
-            gameState.fallSpeed += 0.02;
+            gameState.fallSpeed += 0.005;
             gameState.spawnRate = Math.max(1000, gameState.spawnRate - 10);
             clearInterval(gameState.spawnInterval);
             gameState.spawnInterval = setInterval(createBlock, gameState.spawnRate);
