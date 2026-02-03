@@ -511,7 +511,7 @@ function update() {
     if (!gameState.isRunning) return;
 
     const bounds = getPlayAreaBounds();
-    const dangerZone = bounds.height * 0.7;
+    const dangerZone = 0; // Show hint immediately
 
     gameState.blocks.forEach(block => {
         block.y += gameState.fallSpeed;
