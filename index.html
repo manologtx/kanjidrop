@@ -1035,6 +1035,7 @@
             }
 
             gameState.activeBlock = block;
+            currentAnswerBlockId = null; // Force answer buttons to refresh
 
             if (block && block.element) {
                 block.element.classList.remove('block-gray');
@@ -1116,12 +1117,15 @@
                 scoreDisplay.textContent = gameState.score;
                 progressDisplay.textContent = Math.min(gameState.correctCount, WORDS_TO_UNLOCK);
 
+                // Immediately remove from blocks and select next
+                gameState.blocks = gameState.blocks.filter(b => b.id !== block.id);
+                selectNextActiveBlock();
+
+                // Remove the DOM element after animation
                 setTimeout(() => {
                     if (block.element.parentNode) {
                         block.element.remove();
                     }
-                    gameState.blocks = gameState.blocks.filter(b => b.id !== block.id);
-                    selectNextActiveBlock();
                 }, 300);
 
                 // Check for level completion (30 correct)
@@ -1218,7 +1222,7 @@
             difficultyTimer = setInterval(() => {
                 if (gameState.isRunning) {
                     gameState.fallSpeed += 0.02;
-                    gameState.spawnRate = Math.max(1200, gameState.spawnRate - 50);
+                    gameState.spawnRate = Math.max(1000, gameState.spawnRate - 50);
                     clearInterval(gameState.spawnInterval);
                     gameState.spawnInterval = setInterval(createBlock, gameState.spawnRate);
                 }
@@ -1266,7 +1270,7 @@
                 spawnInterval: null,
                 gameLoop: null,
                 fallSpeed: 0.36,
-                spawnRate: 4000
+                spawnRate: 2500
             };
 
             document.querySelectorAll('.kanji-block').forEach(el => el.remove());
