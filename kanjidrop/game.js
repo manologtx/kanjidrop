@@ -529,7 +529,7 @@ function update() {
     if (!gameState.isRunning) return;
 
     const bounds = getPlayAreaBounds();
-    const dangerZone = bounds.height * 0.7;
+    const dangerZone = bounds.height * 0.4;
 
     gameState.blocks.forEach(block => {
         block.y += gameState.fallSpeed;
