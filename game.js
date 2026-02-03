@@ -499,7 +499,7 @@ function startDifficultyTimer() {
     difficultyTimer = setInterval(() => {
         if (gameState.isRunning) {
             gameState.fallSpeed += 0.02;
-            gameState.spawnRate = Math.max(1000, gameState.spawnRate - 50);
+            gameState.spawnRate = Math.max(1000, gameState.spawnRate - 10);
             clearInterval(gameState.spawnInterval);
             gameState.spawnInterval = setInterval(createBlock, gameState.spawnRate);
         }
@@ -547,7 +547,7 @@ function startGame(catKey, level = 1) {
         spawnInterval: null,
         gameLoop: null,
         fallSpeed: 0.6,
-        spawnRate: 2000
+        spawnRate: 3500
     };
 
     document.querySelectorAll('.kanji-block').forEach(el => el.remove());
