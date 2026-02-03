@@ -74,7 +74,7 @@ let gameState = {
     spawnInterval: null,
     gameLoop: null,
     fallSpeed: 0.10,
-    spawnRate: 3000
+    spawnRate: 2400
 };
 
 // DOM elements
@@ -337,7 +337,7 @@ function selectNextActiveBlock() {
 // Track current answer set
 let currentAnswerBlockId = null;
 
-// Update answer buttons
+// Update answer buttons (reuses existing DOM elements to avoid stutter)
 function updateAnswerButtons(forceUpdate = false) {
     if (!forceUpdate && gameState.activeBlock && currentAnswerBlockId === gameState.activeBlock.id) {
         return;
@@ -361,14 +361,29 @@ function updateAnswerButtons(forceUpdate = false) {
     const allReadings = [correctReading, ...decoys]
         .sort(() => Math.random() - 0.5);
 
-    answerGrid.innerHTML = '';
-    allReadings.forEach(reading => {
-        const btn = document.createElement('button');
-        btn.className = 'answer-btn';
-        btn.textContent = reading;
-        btn.addEventListener('click', () => handleAnswer(reading, btn));
-        answerGrid.appendChild(btn);
-    });
+    const existingBtns = answerGrid.querySelectorAll('.answer-btn');
+
+    if (existingBtns.length === allReadings.length) {
+        // Reuse existing buttons — just swap text and handler
+        existingBtns.forEach((btn, i) => {
+            const reading = allReadings[i];
+            btn.textContent = reading;
+            btn.className = 'answer-btn';
+            const newBtn = btn.cloneNode(true);
+            newBtn.addEventListener('click', () => handleAnswer(reading, newBtn));
+            btn.replaceWith(newBtn);
+        });
+    } else {
+        // First time or count mismatch — build from scratch
+        answerGrid.innerHTML = '';
+        allReadings.forEach(reading => {
+            const btn = document.createElement('button');
+            btn.className = 'answer-btn';
+            btn.textContent = reading;
+            btn.addEventListener('click', () => handleAnswer(reading, btn));
+            answerGrid.appendChild(btn);
+        });
+    }
 }
 
 // Handle answer selection
@@ -550,7 +565,7 @@ function startGame(catKey, level = 1) {
         spawnInterval: null,
         gameLoop: null,
         fallSpeed: 0.6,
-        spawnRate: 3500
+        spawnRate: 2800
     };
 
     document.querySelectorAll('.kanji-block').forEach(el => el.remove());
