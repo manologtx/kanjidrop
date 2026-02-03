@@ -279,21 +279,18 @@ function createBlock() {
     };
 
     const el = document.createElement('div');
-    el.className = 'kanji-block block-gray spawning';
+    el.className = 'kanji-block block-gray'; // Removed spawning class
     el.style.width = `${blockWidth}px`;
     el.style.left = `${x}px`;
     el.style.top = `${block.y}px`;
-    el.style.opacity = '0';
+    // Removed opacity = 0
     el.textContent = vocab.kanji;
     el.dataset.blockId = block.id;
 
     playArea.appendChild(el);
     block.element = el;
 
-    setTimeout(() => {
-        el.classList.remove('spawning');
-        el.style.opacity = '1';
-    }, 500);
+    // Removed setTimeout for spawning animation
 
     gameState.blocks.push(block);
 
