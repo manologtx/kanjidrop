@@ -74,7 +74,7 @@ let gameState = {
     spawnInterval: null,
     gameLoop: null,
     fallSpeed: 0.35,
-    spawnRate: 2000
+    spawnRate: 3500
 };
 
 // DOM elements
