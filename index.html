@@ -461,15 +461,57 @@
             color: #FF6B6B;
         }
 
-        /* Options placeholder */
+        /* Options */
         .options-content {
             text-align: center;
-            opacity: 0.8;
+            width: 100%;
+            max-width: 300px;
         }
 
-        .options-content p {
-            font-size: 14px;
+        .option-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            padding: 15px 20px;
+            border-radius: 15px;
             margin: 10px 0;
+        }
+
+        .option-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .toggle-container {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 3px;
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            padding: 8px 15px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            border-radius: 17px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #7ED56F 0%, #28B485 100%);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(40, 180, 133, 0.4);
+        }
+
+        .toggle-btn:hover:not(.active) {
+            color: #fff;
         }
 
         .hidden {
@@ -552,8 +594,8 @@
         <div class="overlay" id="mainMenuScreen">
             <h1>漢字ドロップ</h1>
             <p class="subtitle">Kanji Drop</p>
-            <p style="font-size: 13px; max-width: 280px; text-align: center; opacity: 0.7; margin-bottom: 20px;">
-                Match the falling kanji with their hiragana readings!
+            <p id="menuDescription" style="font-size: 13px; max-width: 280px; text-align: center; opacity: 0.7; margin-bottom: 20px;">
+                Match the falling kanji with their readings!
             </p>
             <button class="menu-btn" id="playBtn">Play</button>
             <button class="menu-btn secondary" id="levelSelectBtn">Level Select</button>
@@ -574,8 +616,13 @@
             <button class="back-btn" id="optionsBackBtn">← Back</button>
             <h2>Options</h2>
             <div class="options-content">
-                <p>Coming soon...</p>
-                <p style="font-size: 12px; opacity: 0.6;">Sound, difficulty settings, and more!</p>
+                <div class="option-row">
+                    <span class="option-label">Reading Style</span>
+                    <div class="toggle-container">
+                        <button class="toggle-btn active" id="hiraganaBtn">Hiragana</button>
+                        <button class="toggle-btn" id="romajiBtn">Romaji</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -609,132 +656,33 @@
     </div>
 
     <script>
-        // Kanji vocabulary organized by LEVEL with categories
-        const levelData = {
-            1: {
-                name: 'Numbers',
-                category: 'Basic',
-                vocabulary: [
-                    { kanji: '一', hiragana: 'いち', meaning: 'one' },
-                    { kanji: '二', hiragana: 'に', meaning: 'two' },
-                    { kanji: '三', hiragana: 'さん', meaning: 'three' },
-                    { kanji: '四', hiragana: 'よん', meaning: 'four' },
-                    { kanji: '五', hiragana: 'ご', meaning: 'five' },
-                    { kanji: '六', hiragana: 'ろく', meaning: 'six' },
-                    { kanji: '七', hiragana: 'なな', meaning: 'seven' },
-                    { kanji: '八', hiragana: 'はち', meaning: 'eight' },
-                    { kanji: '九', hiragana: 'きゅう', meaning: 'nine' },
-                    { kanji: '十', hiragana: 'じゅう', meaning: 'ten' },
-                ]
-            },
-            2: {
-                name: 'Nature',
-                category: 'Basic',
-                vocabulary: [
-                    { kanji: '日', hiragana: 'ひ', meaning: 'sun/day' },
-                    { kanji: '月', hiragana: 'つき', meaning: 'moon' },
-                    { kanji: '火', hiragana: 'ひ', meaning: 'fire' },
-                    { kanji: '水', hiragana: 'みず', meaning: 'water' },
-                    { kanji: '木', hiragana: 'き', meaning: 'tree' },
-                    { kanji: '金', hiragana: 'きん', meaning: 'gold' },
-                    { kanji: '土', hiragana: 'つち', meaning: 'earth' },
-                    { kanji: '山', hiragana: 'やま', meaning: 'mountain' },
-                    { kanji: '川', hiragana: 'かわ', meaning: 'river' },
-                    { kanji: '海', hiragana: 'うみ', meaning: 'sea' },
-                    { kanji: '空', hiragana: 'そら', meaning: 'sky' },
-                    { kanji: '雨', hiragana: 'あめ', meaning: 'rain' },
-                    { kanji: '雪', hiragana: 'ゆき', meaning: 'snow' },
-                    { kanji: '風', hiragana: 'かぜ', meaning: 'wind' },
-                    { kanji: '花', hiragana: 'はな', meaning: 'flower' },
-                ]
-            },
-            3: {
-                name: 'People',
-                category: 'Basic',
-                vocabulary: [
-                    { kanji: '人', hiragana: 'ひと', meaning: 'person' },
-                    { kanji: '男', hiragana: 'おとこ', meaning: 'man' },
-                    { kanji: '女', hiragana: 'おんな', meaning: 'woman' },
-                    { kanji: '子', hiragana: 'こ', meaning: 'child' },
-                    { kanji: '父', hiragana: 'ちち', meaning: 'father' },
-                    { kanji: '母', hiragana: 'はは', meaning: 'mother' },
-                    { kanji: '兄', hiragana: 'あに', meaning: 'older brother' },
-                    { kanji: '姉', hiragana: 'あね', meaning: 'older sister' },
-                    { kanji: '弟', hiragana: 'おとうと', meaning: 'younger brother' },
-                    { kanji: '妹', hiragana: 'いもうと', meaning: 'younger sister' },
-                    { kanji: '友', hiragana: 'とも', meaning: 'friend' },
-                    { kanji: '先', hiragana: 'さき', meaning: 'ahead/previous' },
-                    { kanji: '生', hiragana: 'せい', meaning: 'life/birth' },
-                    { kanji: '王', hiragana: 'おう', meaning: 'king' },
-                    { kanji: '目', hiragana: 'め', meaning: 'eye' },
-                ]
-            },
-            4: {
-                name: 'Animals',
-                category: 'Basic',
-                vocabulary: [
-                    { kanji: '犬', hiragana: 'いぬ', meaning: 'dog' },
-                    { kanji: '猫', hiragana: 'ねこ', meaning: 'cat' },
-                    { kanji: '鳥', hiragana: 'とり', meaning: 'bird' },
-                    { kanji: '魚', hiragana: 'さかな', meaning: 'fish' },
-                    { kanji: '虫', hiragana: 'むし', meaning: 'insect' },
-                    { kanji: '馬', hiragana: 'うま', meaning: 'horse' },
-                    { kanji: '牛', hiragana: 'うし', meaning: 'cow' },
-                    { kanji: '羊', hiragana: 'ひつじ', meaning: 'sheep' },
-                    { kanji: '豚', hiragana: 'ぶた', meaning: 'pig' },
-                    { kanji: '鶏', hiragana: 'にわとり', meaning: 'chicken' },
-                    { kanji: '象', hiragana: 'ぞう', meaning: 'elephant' },
-                    { kanji: '熊', hiragana: 'くま', meaning: 'bear' },
-                    { kanji: '狐', hiragana: 'きつね', meaning: 'fox' },
-                    { kanji: '兎', hiragana: 'うさぎ', meaning: 'rabbit' },
-                    { kanji: '蛇', hiragana: 'へび', meaning: 'snake' },
-                ]
-            },
-            5: {
-                name: 'Body',
-                category: 'Intermediate',
-                vocabulary: [
-                    { kanji: '体', hiragana: 'からだ', meaning: 'body' },
-                    { kanji: '頭', hiragana: 'あたま', meaning: 'head' },
-                    { kanji: '顔', hiragana: 'かお', meaning: 'face' },
-                    { kanji: '目', hiragana: 'め', meaning: 'eye' },
-                    { kanji: '耳', hiragana: 'みみ', meaning: 'ear' },
-                    { kanji: '口', hiragana: 'くち', meaning: 'mouth' },
-                    { kanji: '鼻', hiragana: 'はな', meaning: 'nose' },
-                    { kanji: '手', hiragana: 'て', meaning: 'hand' },
-                    { kanji: '足', hiragana: 'あし', meaning: 'foot/leg' },
-                    { kanji: '心', hiragana: 'こころ', meaning: 'heart/mind' },
-                    { kanji: '首', hiragana: 'くび', meaning: 'neck' },
-                    { kanji: '肩', hiragana: 'かた', meaning: 'shoulder' },
-                    { kanji: '背', hiragana: 'せ', meaning: 'back/height' },
-                    { kanji: '腹', hiragana: 'はら', meaning: 'stomach' },
-                    { kanji: '指', hiragana: 'ゆび', meaning: 'finger' },
-                ]
-            },
-            6: {
-                name: 'Actions',
-                category: 'Intermediate',
-                vocabulary: [
-                    { kanji: '食', hiragana: 'た', meaning: 'eat' },
-                    { kanji: '飲', hiragana: 'の', meaning: 'drink' },
-                    { kanji: '見', hiragana: 'み', meaning: 'see' },
-                    { kanji: '聞', hiragana: 'き', meaning: 'hear' },
-                    { kanji: '話', hiragana: 'はな', meaning: 'speak' },
-                    { kanji: '読', hiragana: 'よ', meaning: 'read' },
-                    { kanji: '書', hiragana: 'か', meaning: 'write' },
-                    { kanji: '行', hiragana: 'い', meaning: 'go' },
-                    { kanji: '来', hiragana: 'く', meaning: 'come' },
-                    { kanji: '帰', hiragana: 'かえ', meaning: 'return' },
-                    { kanji: '入', hiragana: 'はい', meaning: 'enter' },
-                    { kanji: '出', hiragana: 'で', meaning: 'exit' },
-                    { kanji: '立', hiragana: 'た', meaning: 'stand' },
-                    { kanji: '座', hiragana: 'すわ', meaning: 'sit' },
-                    { kanji: '寝', hiragana: 'ね', meaning: 'sleep' },
-                ]
-            }
+        // Vocabulary loaded from external JSON file
+        let levelData = {};
+
+        // Game settings
+        let gameSettings = {
+            readingStyle: 'hiragana' // 'hiragana' or 'romaji'
         };
 
-        const TOTAL_LEVELS = Object.keys(levelData).length;
+        // Load settings from localStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('kanjiDropSettings');
+            if (saved) {
+                gameSettings = JSON.parse(saved);
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            localStorage.setItem('kanjiDropSettings', JSON.stringify(gameSettings));
+        }
+
+        // Get reading based on current setting
+        function getReading(vocab) {
+            return gameSettings.readingStyle === 'romaji' ? vocab.romaji : vocab.hiragana;
+        }
+
+        let TOTAL_LEVELS = 0;
         const WORDS_TO_UNLOCK = 30;
 
         // Progress tracking (saved to localStorage)
@@ -777,6 +725,7 @@
         const scoreDisplay = document.getElementById('scoreDisplay');
         const levelDisplay = document.getElementById('levelDisplay');
         const progressDisplay = document.getElementById('progressDisplay');
+        const answerLabel = document.querySelector('.answer-label');
 
         // Screens
         const mainMenuScreen = document.getElementById('mainMenuScreen');
@@ -807,8 +756,22 @@
         const levelUnlockMsg = document.getElementById('levelUnlockMsg');
         const unlockedLevelName = document.getElementById('unlockedLevelName');
 
-        // Initialize
-        loadProgress();
+        // Options buttons
+        const hiraganaBtn = document.getElementById('hiraganaBtn');
+        const romajiBtn = document.getElementById('romajiBtn');
+
+        // Load vocabulary and initialize
+        fetch('vocabulary.json')
+            .then(res => res.json())
+            .then(data => {
+                levelData = data;
+                TOTAL_LEVELS = Object.keys(levelData).length;
+                loadProgress();
+                loadSettings();
+                updateOptionsUI();
+                showScreen(mainMenuScreen);
+            })
+            .catch(err => console.error('Failed to load vocabulary:', err));
 
         // Show/hide screens
         function showScreen(screen) {
@@ -816,6 +779,28 @@
                 s.classList.add('hidden');
             });
             if (screen) screen.classList.remove('hidden');
+        }
+
+        // Update options UI to reflect current settings
+        function updateOptionsUI() {
+            if (gameSettings.readingStyle === 'romaji') {
+                hiraganaBtn.classList.remove('active');
+                romajiBtn.classList.add('active');
+            } else {
+                hiraganaBtn.classList.add('active');
+                romajiBtn.classList.remove('active');
+            }
+            // Update answer label text
+            updateAnswerLabel();
+        }
+
+        // Update answer area label based on reading style
+        function updateAnswerLabel() {
+            if (gameSettings.readingStyle === 'romaji') {
+                answerLabel.textContent = 'Select the romaji reading:';
+            } else {
+                answerLabel.textContent = 'Select the hiragana reading:';
+            }
         }
 
         // Pause game
@@ -967,32 +952,32 @@
 
             currentAnswerBlockId = gameState.activeBlock.id;
 
-            const correctReading = gameState.activeBlock.vocab.hiragana;
+            const correctReading = getReading(gameState.activeBlock.vocab);
             const currentVocab = getVocabularyForLevel(gameState.currentLevel);
             const decoys = currentVocab
-                .filter(v => v.hiragana !== correctReading)
+                .filter(v => getReading(v) !== correctReading)
                 .sort(() => Math.random() - 0.5)
                 .slice(0, 5)
-                .map(v => v.hiragana);
+                .map(v => getReading(v));
 
             const allReadings = [correctReading, ...decoys]
                 .sort(() => Math.random() - 0.5);
 
             answerGrid.innerHTML = '';
-            allReadings.forEach(hiragana => {
+            allReadings.forEach(reading => {
                 const btn = document.createElement('button');
                 btn.className = 'answer-btn';
-                btn.textContent = hiragana;
-                btn.addEventListener('click', () => handleAnswer(hiragana, btn));
+                btn.textContent = reading;
+                btn.addEventListener('click', () => handleAnswer(reading, btn));
                 answerGrid.appendChild(btn);
             });
         }
 
         // Handle answer selection
-        function handleAnswer(hiragana, btn) {
+        function handleAnswer(reading, btn) {
             if (!gameState.activeBlock) return;
 
-            const isCorrect = gameState.activeBlock.vocab.hiragana === hiragana;
+            const isCorrect = getReading(gameState.activeBlock.vocab) === reading;
 
             if (isCorrect) {
                 const block = gameState.activeBlock;
@@ -1125,7 +1110,7 @@
                     if (!block.element.querySelector('.helper-hint')) {
                         const hint = document.createElement('div');
                         hint.className = 'helper-hint';
-                        hint.textContent = block.vocab.hiragana;
+                        hint.textContent = getReading(block.vocab);
                         block.element.appendChild(hint);
                     }
                 }
@@ -1181,7 +1166,21 @@
         });
 
         optionsBtn.addEventListener('click', () => {
+            updateOptionsUI();
             showScreen(optionsScreen);
+        });
+
+        // Reading style toggle
+        hiraganaBtn.addEventListener('click', () => {
+            gameSettings.readingStyle = 'hiragana';
+            saveSettings();
+            updateOptionsUI();
+        });
+
+        romajiBtn.addEventListener('click', () => {
+            gameSettings.readingStyle = 'romaji';
+            saveSettings();
+            updateOptionsUI();
         });
 
         levelBackBtn.addEventListener('click', () => {
@@ -1235,8 +1234,6 @@
             showScreen(mainMenuScreen);
         });
 
-        // Initialize
-        showScreen(mainMenuScreen);
     </script>
 </body>
 </html>

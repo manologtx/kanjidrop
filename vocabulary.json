@@ -1,0 +1,123 @@
+{
+    "1": {
+        "name": "Numbers",
+        "category": "Basic",
+        "vocabulary": [
+            { "kanji": "一", "hiragana": "いち", "romaji": "ichi", "meaning": "one" },
+            { "kanji": "二", "hiragana": "に", "romaji": "ni", "meaning": "two" },
+            { "kanji": "三", "hiragana": "さん", "romaji": "san", "meaning": "three" },
+            { "kanji": "四", "hiragana": "よん", "romaji": "yon", "meaning": "four" },
+            { "kanji": "五", "hiragana": "ご", "romaji": "go", "meaning": "five" },
+            { "kanji": "六", "hiragana": "ろく", "romaji": "roku", "meaning": "six" },
+            { "kanji": "七", "hiragana": "なな", "romaji": "nana", "meaning": "seven" },
+            { "kanji": "八", "hiragana": "はち", "romaji": "hachi", "meaning": "eight" },
+            { "kanji": "九", "hiragana": "きゅう", "romaji": "kyuu", "meaning": "nine" },
+            { "kanji": "十", "hiragana": "じゅう", "romaji": "juu", "meaning": "ten" }
+        ]
+    },
+    "2": {
+        "name": "Nature",
+        "category": "Basic",
+        "vocabulary": [
+            { "kanji": "日", "hiragana": "ひ", "romaji": "hi", "meaning": "sun/day" },
+            { "kanji": "月", "hiragana": "つき", "romaji": "tsuki", "meaning": "moon" },
+            { "kanji": "火", "hiragana": "ひ", "romaji": "hi", "meaning": "fire" },
+            { "kanji": "水", "hiragana": "みず", "romaji": "mizu", "meaning": "water" },
+            { "kanji": "木", "hiragana": "き", "romaji": "ki", "meaning": "tree" },
+            { "kanji": "金", "hiragana": "きん", "romaji": "kin", "meaning": "gold" },
+            { "kanji": "土", "hiragana": "つち", "romaji": "tsuchi", "meaning": "earth" },
+            { "kanji": "山", "hiragana": "やま", "romaji": "yama", "meaning": "mountain" },
+            { "kanji": "川", "hiragana": "かわ", "romaji": "kawa", "meaning": "river" },
+            { "kanji": "海", "hiragana": "うみ", "romaji": "umi", "meaning": "sea" },
+            { "kanji": "空", "hiragana": "そら", "romaji": "sora", "meaning": "sky" },
+            { "kanji": "雨", "hiragana": "あめ", "romaji": "ame", "meaning": "rain" },
+            { "kanji": "雪", "hiragana": "ゆき", "romaji": "yuki", "meaning": "snow" },
+            { "kanji": "風", "hiragana": "かぜ", "romaji": "kaze", "meaning": "wind" },
+            { "kanji": "花", "hiragana": "はな", "romaji": "hana", "meaning": "flower" }
+        ]
+    },
+    "3": {
+        "name": "People",
+        "category": "Basic",
+        "vocabulary": [
+            { "kanji": "人", "hiragana": "ひと", "romaji": "hito", "meaning": "person" },
+            { "kanji": "男", "hiragana": "おとこ", "romaji": "otoko", "meaning": "man" },
+            { "kanji": "女", "hiragana": "おんな", "romaji": "onna", "meaning": "woman" },
+            { "kanji": "子", "hiragana": "こ", "romaji": "ko", "meaning": "child" },
+            { "kanji": "父", "hiragana": "ちち", "romaji": "chichi", "meaning": "father" },
+            { "kanji": "母", "hiragana": "はは", "romaji": "haha", "meaning": "mother" },
+            { "kanji": "兄", "hiragana": "あに", "romaji": "ani", "meaning": "older brother" },
+            { "kanji": "姉", "hiragana": "あね", "romaji": "ane", "meaning": "older sister" },
+            { "kanji": "弟", "hiragana": "おとうと", "romaji": "otouto", "meaning": "younger brother" },
+            { "kanji": "妹", "hiragana": "いもうと", "romaji": "imouto", "meaning": "younger sister" },
+            { "kanji": "友", "hiragana": "とも", "romaji": "tomo", "meaning": "friend" },
+            { "kanji": "先", "hiragana": "さき", "romaji": "saki", "meaning": "ahead/previous" },
+            { "kanji": "生", "hiragana": "せい", "romaji": "sei", "meaning": "life/birth" },
+            { "kanji": "王", "hiragana": "おう", "romaji": "ou", "meaning": "king" },
+            { "kanji": "目", "hiragana": "め", "romaji": "me", "meaning": "eye" }
+        ]
+    },
+    "4": {
+        "name": "Animals",
+        "category": "Basic",
+        "vocabulary": [
+            { "kanji": "犬", "hiragana": "いぬ", "romaji": "inu", "meaning": "dog" },
+            { "kanji": "猫", "hiragana": "ねこ", "romaji": "neko", "meaning": "cat" },
+            { "kanji": "鳥", "hiragana": "とり", "romaji": "tori", "meaning": "bird" },
+            { "kanji": "魚", "hiragana": "さかな", "romaji": "sakana", "meaning": "fish" },
+            { "kanji": "虫", "hiragana": "むし", "romaji": "mushi", "meaning": "insect" },
+            { "kanji": "馬", "hiragana": "うま", "romaji": "uma", "meaning": "horse" },
+            { "kanji": "牛", "hiragana": "うし", "romaji": "ushi", "meaning": "cow" },
+            { "kanji": "羊", "hiragana": "ひつじ", "romaji": "hitsuji", "meaning": "sheep" },
+            { "kanji": "豚", "hiragana": "ぶた", "romaji": "buta", "meaning": "pig" },
+            { "kanji": "鶏", "hiragana": "にわとり", "romaji": "niwatori", "meaning": "chicken" },
+            { "kanji": "象", "hiragana": "ぞう", "romaji": "zou", "meaning": "elephant" },
+            { "kanji": "熊", "hiragana": "くま", "romaji": "kuma", "meaning": "bear" },
+            { "kanji": "狐", "hiragana": "きつね", "romaji": "kitsune", "meaning": "fox" },
+            { "kanji": "兎", "hiragana": "うさぎ", "romaji": "usagi", "meaning": "rabbit" },
+            { "kanji": "蛇", "hiragana": "へび", "romaji": "hebi", "meaning": "snake" }
+        ]
+    },
+    "5": {
+        "name": "Body",
+        "category": "Intermediate",
+        "vocabulary": [
+            { "kanji": "体", "hiragana": "からだ", "romaji": "karada", "meaning": "body" },
+            { "kanji": "頭", "hiragana": "あたま", "romaji": "atama", "meaning": "head" },
+            { "kanji": "顔", "hiragana": "かお", "romaji": "kao", "meaning": "face" },
+            { "kanji": "目", "hiragana": "め", "romaji": "me", "meaning": "eye" },
+            { "kanji": "耳", "hiragana": "みみ", "romaji": "mimi", "meaning": "ear" },
+            { "kanji": "口", "hiragana": "くち", "romaji": "kuchi", "meaning": "mouth" },
+            { "kanji": "鼻", "hiragana": "はな", "romaji": "hana", "meaning": "nose" },
+            { "kanji": "手", "hiragana": "て", "romaji": "te", "meaning": "hand" },
+            { "kanji": "足", "hiragana": "あし", "romaji": "ashi", "meaning": "foot/leg" },
+            { "kanji": "心", "hiragana": "こころ", "romaji": "kokoro", "meaning": "heart/mind" },
+            { "kanji": "首", "hiragana": "くび", "romaji": "kubi", "meaning": "neck" },
+            { "kanji": "肩", "hiragana": "かた", "romaji": "kata", "meaning": "shoulder" },
+            { "kanji": "背", "hiragana": "せ", "romaji": "se", "meaning": "back/height" },
+            { "kanji": "腹", "hiragana": "はら", "romaji": "hara", "meaning": "stomach" },
+            { "kanji": "指", "hiragana": "ゆび", "romaji": "yubi", "meaning": "finger" }
+        ]
+    },
+    "6": {
+        "name": "Actions",
+        "category": "Intermediate",
+        "vocabulary": [
+            { "kanji": "食べる", "hiragana": "たべる", "romaji": "taberu", "meaning": "eat" },
+            { "kanji": "飲む", "hiragana": "のむ", "romaji": "nomu", "meaning": "drink" },
+            { "kanji": "見る", "hiragana": "みる", "romaji": "miru", "meaning": "see" },
+            { "kanji": "聞く", "hiragana": "きく", "romaji": "kiku", "meaning": "hear" },
+            { "kanji": "話す", "hiragana": "はなす", "romaji": "hanasu", "meaning": "speak" },
+            { "kanji": "読む", "hiragana": "よむ", "romaji": "yomu", "meaning": "read" },
+            { "kanji": "書く", "hiragana": "かく", "romaji": "kaku", "meaning": "write" },
+            { "kanji": "行く", "hiragana": "いく", "romaji": "iku", "meaning": "go" },
+            { "kanji": "来る", "hiragana": "くる", "romaji": "kuru", "meaning": "come" },
+            { "kanji": "帰る", "hiragana": "かえる", "romaji": "kaeru", "meaning": "return" },
+            { "kanji": "入る", "hiragana": "はいる", "romaji": "hairu", "meaning": "enter" },
+            { "kanji": "出る", "hiragana": "でる", "romaji": "deru", "meaning": "exit" },
+            { "kanji": "立つ", "hiragana": "たつ", "romaji": "tatsu", "meaning": "stand" },
+            { "kanji": "座る", "hiragana": "すわる", "romaji": "suwaru", "meaning": "sit" },
+            { "kanji": "寝る", "hiragana": "ねる", "romaji": "neru", "meaning": "sleep" }
+        ]
+    }
+}
