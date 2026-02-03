@@ -73,7 +73,7 @@ let gameState = {
     isRunning: false,
     spawnInterval: null,
     gameLoop: null,
-    fallSpeed: 0.6,
+    fallSpeed: 0.35,
     spawnRate: 2000
 };
 
