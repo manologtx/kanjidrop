@@ -547,7 +547,7 @@ function startGame(catKey, level = 1) {
         spawnInterval: null,
         gameLoop: null,
         fallSpeed: 0.6,
-        spawnRate: 1700
+        spawnRate: 2000
     };
 
     document.querySelectorAll('.kanji-block').forEach(el => el.remove());
